@@ -31,6 +31,7 @@ class RandomUserViewModel @Inject internal constructor(private val useCase: Rand
     }
 
     fun loadUsers() {
+        Log.v(RandomUserViewModel::class.simpleName, "loaduser loaded")
         _randomUsers.value = State.loading()
         viewModelScope.launch {
             val state = withContext(Dispatchers.IO) {
