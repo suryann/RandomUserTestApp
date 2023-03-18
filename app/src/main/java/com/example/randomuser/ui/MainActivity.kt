@@ -1,5 +1,6 @@
 package com.example.randomuser.ui
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -8,6 +9,7 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -30,7 +32,6 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val viewModel: RandomUserViewModel by viewModels()
-    private var userName = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -50,26 +51,29 @@ class MainActivity : ComponentActivity() {
                 }
                 composable("screen2") { UserDetailsScreen(navController) }
             }
-
         }
+        viewModel.users.value?.data?.get(0)?.userName?.let { username -> viewModel.onUserItemClicked(username) }
     }
 
     @Composable
     fun UserListScreen(navController: NavController, userList: List<RandomUser>) {
         Log.v(MainActivity::class.java.simpleName, "userlist - > ${userList.toString()}")
-        Column(modifier = Modifier
-            .verticalScroll(rememberScrollState())
-            .fillMaxWidth()) {
-            userList.map { user ->
-                Log.v(
-                    MainActivity::class.java.simpleName,
-                    "it.firstName  -> ${user.firstName}, userName  -> ${user.userName}, pic -> ${user.thumbPicture}"
-                )
-                UserListItem(user) {
-                    viewModel.onUserItemClicked(user.userName)
-                    navController.navigate("Screen2")
+        Row {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .wrapContentSize()
+            ) {
+                userList.map { user ->
+                    UserListItem(user) {
+                        viewModel.onUserItemClicked(user.userName)
+                        if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT)
+                            navController.navigate("Screen2")
+                    }
                 }
             }
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE)
+                UserDetailsScreen(navController)
         }
     }
 
@@ -77,7 +81,7 @@ class MainActivity : ComponentActivity() {
     fun UserListItem(user: RandomUser, onItemClick: () -> Unit) {
         Row(
             modifier = Modifier
-                .fillMaxWidth()
+                .wrapContentSize()
                 .clickable(onClick = onItemClick)
                 .padding(16.dp)
         ) {
@@ -102,7 +106,7 @@ class MainActivity : ComponentActivity() {
         val user = data.value?.data
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .wrapContentSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.Center
         ) {
